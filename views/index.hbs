@@ -3,6 +3,10 @@
 
 <ul>
   {{#each books}}
-  <li><a href="/book/{{this._id}}">{{this.title}}</a></li>
+  <li>
+    <a href="/books/{{this._id}}">{{this.title}}</a> -
+    <a href="/book/edit?book_id={{this._id}}" class="edit-button">EDIT</a> - 
+    <a href="/book/delete/{{this._id}}" class="edit-button">DEL</a>
+  </li>
   {{/each}}
 </ul>
