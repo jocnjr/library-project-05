@@ -25,6 +25,14 @@ router.get('/books/:bookId', (req, res, next) => {
     .catch(error => { throw new Error(error) });
 });
 
+router.use((req, res, next) => {
+  if (req.session.currentUser) { // <== if there's user in the session (user is logged in)
+    next(); // ==> go to the next route ---
+  } else {                          //    |
+    res.redirect("/login");         //    |
+  }                                 //    |
+}); 
+
 router.get('/book/add', (req, res, next) => {
   res.render("book-add");
 });
