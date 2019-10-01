@@ -3,7 +3,9 @@
 <p>{{description}}</p>
 <h3>rating: {{rating}}</h3>
 <p><a href="/">back</a></p>
-
+{{#if owner}}
+<h3>owner: {{owner.username}}</h3>
+{{/if}}
 <hr>
 <p>Add a review</p>
 <form action="/reviews/add?book_id={{_id}}" method="post">
