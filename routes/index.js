@@ -48,9 +48,25 @@ router.get('/book/add', ensureAuthenticated, async (req, res, next) => {
 });
 
 router.post('/books/add', ensureAuthenticated, (req, res, next) => {
-  const { title, author, description, rating } = req.body;
+
+  const {
+    title,
+    author,
+    description,
+    rating,
+    latitude,
+    longitude } = req.body;
+
+  // adding location
+
+  let location = {
+    type: 'Point',
+    coordinates: [longitude, latitude]
+  };
+
+
   const userId = req.user._id;
-  const newBook = new Book({ title, author: [author], description, rating, owner: userId })
+  const newBook = new Book({ title, author: [author], description, rating, owner: userId, location })
   newBook.save()
     .then((book) => {
       res.redirect('/');
@@ -117,6 +133,24 @@ router.post('/reviews/add', (req, res, next) => {
     })
 });
 
+// books api
+
+router.get('/api', (req, res) => {
+  Book.find()
+    .then(arrayOfBooksFromTheDb => {
+      res.json(arrayOfBooksFromTheDb);
+    })
+    .catch(error => { throw new Error(error); })
+});
+
+router.get('/api/book/:bookId', (req, res) => {
+  Book.findById(req.params.bookId)
+    .then(bookFromDb => {
+      res.json(bookFromDb);
+    })
+    .catch(error => { throw new Error(error); })
+});
+
 // middleware for authentication
 
 function ensureAuthenticated(req, res, next) {
@@ -126,6 +160,8 @@ function ensureAuthenticated(req, res, next) {
     res.redirect('/login')
   }
 }
+
+
 
 module.exports = router;
 
