@@ -3,13 +3,18 @@ const router = express.Router();
 const Book = require('../models/book');
 const Author = require('../models/author');
 const ensureLogin = require("connect-ensure-login");
+const checkRoles = require('../middlewares/check-roles');
 
 
 /* GET home page */
 router.get('/', ensureAuthenticated, (req, res, next) => {
-  Book.find({owner: req.user._id})
+  let checkAdmin = checkRoles('Admin');
+
+  console.log(checkAdmin);
+
+  Book.find({ owner: req.user._id })
     .then(arrayOfBooksFromTheDb => {
-      res.render('index', { books: arrayOfBooksFromTheDb });
+      res.render('index', { books: arrayOfBooksFromTheDb, user: req.user });
     })
     .catch(error => { throw new Error(error); });
 });
@@ -36,8 +41,10 @@ router.get('/books/:bookId', (req, res, next) => {
 //   }                                 //    |
 // }); 
 
-router.get('/book/add', ensureAuthenticated, (req, res, next) => {
-  res.render("book-add");
+router.get('/book/add', ensureAuthenticated, async (req, res, next) => {
+  let authors = await Author.find();
+  console.log(authors)
+  res.render("book-add", { authors });
 });
 
 router.post('/books/add', ensureAuthenticated, (req, res, next) => {

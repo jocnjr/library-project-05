@@ -41,7 +41,6 @@ app.use(cookieParser());
 // passport auth config
 app.use(session({
   secret: "thisisironhack",
-  cookie: { maxAge: 60000 },
   resave: true,
   saveUninitialized: true,
   store: new MongoStore({
