@@ -15,6 +15,7 @@ const LocalStrategy = require("passport-local").Strategy;
 const User = require('./models/user');
 const bcrypt = require("bcrypt");
 const SlackStrategy = require("passport-slack").Strategy;
+const flash = require('connect-flash');
 
 
 
