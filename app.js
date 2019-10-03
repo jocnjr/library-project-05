@@ -10,11 +10,16 @@ const logger = require('morgan');
 const path = require('path');
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const User = require('./models/user');
+const bcrypt = require("bcrypt");
+const SlackStrategy = require("passport-slack").Strategy;
 
 
 
 mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true , useUnifiedTopology: true })
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(x => {
     console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`)
   })
@@ -33,15 +38,76 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// basic auth setup
+// passport auth config
 app.use(session({
   secret: "thisisironhack",
-  cookie: { maxAge: 60000 },
+  resave: true,
+  saveUninitialized: true,
   store: new MongoStore({
     mongooseConnection: mongoose.connection,
     ttl: 24 * 60 * 60 // 1 day
   })
 }));
+
+
+passport.serializeUser((user, cb) => {
+  cb(null, user._id);
+});
+
+passport.deserializeUser((id, cb) => {
+  User.findById(id, (err, user) => {
+    if (err) { return cb(err); }
+    cb(null, user);
+  });
+});
+
+passport.use(new LocalStrategy((username, password, next) => {
+  User.findOne({ username }, (err, user) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return next(null, false, { message: "Incorrect username" });
+    }
+    if (!bcrypt.compareSync(password, user.password)) {
+      return next(null, false, { message: "Incorrect password" });
+    }
+
+    return next(null, user);
+  });
+}));
+
+passport.use(
+  new SlackStrategy(
+    {
+      clientID: process.env.SLACK_CLIENTID,
+      clientSecret: process.env.SLACK_SECRET,
+      callbackURL: "/auth/slack/callback"
+    },
+    (accessToken, refreshToken, profile, done) => {
+      // to see the structure of the data in received response:
+      console.log("Slack account details:", profile);
+
+      User.findOne({ slackID: profile.id })
+        .then(user => {
+          if (user) {
+            done(null, user);
+            return;
+          }
+
+          User.create({ slackID: profile.id })
+            .then(newUser => {
+              done(null, newUser);
+            })
+            .catch(err => done(err)); // closes User.create()
+        })
+        .catch(err => done(err)); // closes User.findOne()
+    }
+  )
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Express View engine setup
 

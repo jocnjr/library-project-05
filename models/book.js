@@ -11,7 +11,8 @@ const bookSchema = new Schema({
       user: String,
       comments: String
     } 
-  ]
+  ],
+  owner: {type: Schema.Types.ObjectId, ref: 'User'}
 }, {
   timestamps: true
 });

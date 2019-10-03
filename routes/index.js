@@ -2,12 +2,19 @@ const express = require('express');
 const router = express.Router();
 const Book = require('../models/book');
 const Author = require('../models/author');
+const ensureLogin = require("connect-ensure-login");
+const checkRoles = require('../middlewares/check-roles');
+
 
 /* GET home page */
-router.get('/', (req, res, next) => {
-  Book.find()
+router.get('/', ensureAuthenticated, (req, res, next) => {
+  let checkAdmin = checkRoles('Admin');
+
+  console.log(checkAdmin);
+
+  Book.find({ owner: req.user._id })
     .then(arrayOfBooksFromTheDb => {
-      res.render('index', { books: arrayOfBooksFromTheDb });
+      res.render('index', { books: arrayOfBooksFromTheDb, user: req.user });
     })
     .catch(error => { throw new Error(error); });
 });
@@ -17,6 +24,7 @@ router.get('/books/:bookId', (req, res, next) => {
   // console.table(bookIdParams);
 
   Book.findById(bookIdParams)
+    .populate('owner')
     .populate('author')
     .then(book => {
       console.log(book);
@@ -25,21 +33,24 @@ router.get('/books/:bookId', (req, res, next) => {
     .catch(error => { throw new Error(error) });
 });
 
-router.use((req, res, next) => {
-  if (req.session.currentUser) { // <== if there's user in the session (user is logged in)
-    next(); // ==> go to the next route ---
-  } else {                          //    |
-    res.redirect("/login");         //    |
-  }                                 //    |
-}); 
+// router.use((req, res, next) => {
+//   if (req.session.currentUser) { // <== if there's user in the session (user is logged in)
+//     next(); // ==> go to the next route ---
+//   } else {                          //    |
+//     res.redirect("/login");         //    |
+//   }                                 //    |
+// }); 
 
-router.get('/book/add', (req, res, next) => {
-  res.render("book-add");
+router.get('/book/add', ensureAuthenticated, async (req, res, next) => {
+  let authors = await Author.find();
+  console.log(authors)
+  res.render("book-add", { authors });
 });
 
-router.post('/books/add', (req, res, next) => {
+router.post('/books/add', ensureAuthenticated, (req, res, next) => {
   const { title, author, description, rating } = req.body;
-  const newBook = new Book({ title, author, description, rating })
+  const userId = req.user._id;
+  const newBook = new Book({ title, author: [author], description, rating, owner: userId })
   newBook.save()
     .then((book) => {
       res.redirect('/');
@@ -105,6 +116,16 @@ router.post('/reviews/add', (req, res, next) => {
       console.log(error)
     })
 });
+
+// middleware for authentication
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  } else {
+    res.redirect('/login')
+  }
+}
 
 module.exports = router;
 
