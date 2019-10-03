@@ -12,10 +12,13 @@ const bookSchema = new Schema({
       comments: String
     } 
   ],
-  owner: {type: Schema.Types.ObjectId, ref: 'User'}
+  owner: {type: Schema.Types.ObjectId, ref: 'User'},
+  location: { type: { type: String }, coordinates: [Number] }
 }, {
   timestamps: true
 });
+
+bookSchema.index({ location: '2dsphere' });
 
 const Book = mongoose.model("Book", bookSchema);
 

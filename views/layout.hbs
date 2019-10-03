@@ -11,19 +11,25 @@
 
 <body>
   <div id="container">
+    <a href="/">Home</a> |
     <a href="/book/add">Add Book</a> |
     {{#unless user}}
-      <a href="/login">Login</a> | 
-      <a href="/signup">Sign up</a> | 
-      <a href="/slack">Login With Slack</a>
-      {{else}} 
-      <a href="/logout">Logout</a>
-      <p>olár {{user.username}}</p>
+    <a href="/login">Login</a> |
+    <a href="/signup">Sign up</a> |
+    <a href="/slack">Login With Slack</a>
+    {{else}}
+    <a href="/logout">Logout</a>
+    <p>olár {{user.username}}</p>
     {{/unless}}
   </div>
 
 
   {{{body}}}
+
+
+  <!--  Axios CDN  -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCWtUJE6liUka9YJjpHByRXmGRaHDOaShc"></script>
 
   <script src="/javascripts/script.js"></script>
 </body>

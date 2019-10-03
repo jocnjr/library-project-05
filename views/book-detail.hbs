@@ -6,6 +6,9 @@
 {{#if owner}}
 <h3>owner: {{owner.username}}</h3>
 {{/if}}
+{{!-- <h4>{{location.coordinates}}</h4> --}}
+<div id="map"></div>
+
 <hr>
 <p>Add a review</p>
 <form action="/reviews/add?book_id={{_id}}" method="post">
@@ -24,9 +27,8 @@
 
 <ul>
   {{#each reviews}}
-      <li>{{comments}} - by {{user}}</li>
-    {{else}}
-      <li>no reviews yet.</li>
+  <li>{{comments}} - by {{user}}</li>
+  {{else}}
+  <li>no reviews yet.</li>
   {{/each}}
 </ul>
-
