@@ -4,6 +4,7 @@ const Book = require('../models/book');
 const Author = require('../models/author');
 const ensureLogin = require("connect-ensure-login");
 const checkRoles = require('../middlewares/check-roles');
+const uploadCloud = require('../middlewares/cloudinary.js');
 
 
 /* GET home page */
@@ -47,7 +48,7 @@ router.get('/book/add', ensureAuthenticated, async (req, res, next) => {
   res.render("book-add", { authors });
 });
 
-router.post('/books/add', ensureAuthenticated, (req, res, next) => {
+router.post('/books/add', ensureAuthenticated, uploadCloud.single('photo'), (req, res, next) => {
 
   const {
     title,
@@ -56,6 +57,10 @@ router.post('/books/add', ensureAuthenticated, (req, res, next) => {
     rating,
     latitude,
     longitude } = req.body;
+
+
+  let { url, originalname } = req.file;
+  
 
   // adding location
 
@@ -66,7 +71,7 @@ router.post('/books/add', ensureAuthenticated, (req, res, next) => {
 
 
   const userId = req.user._id;
-  const newBook = new Book({ title, author: [author], description, rating, owner: userId, location })
+  const newBook = new Book({ title, author: [author], description, rating, owner: userId, location, imgPath: url, imgOriginalName: originalname });
   newBook.save()
     .then((book) => {
       res.redirect('/');
@@ -151,17 +156,16 @@ router.get('/api/book/:bookId', (req, res) => {
     .catch(error => { throw new Error(error); })
 });
 
+
 // middleware for authentication
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   } else {
-    res.redirect('/login')
+    res.redirect('/login');
   }
 }
-
-
 
 module.exports = router;
 

@@ -1,8 +1,8 @@
 window.onload = () => {
 
   console.log('Yo!');
-
-  let baseUrl = 'http://localhost:3000';
+  
+  let baseUrl = 'https://library-project-05.herokuapp.com';
   let uri = window.location.pathname;
 
   // plot book location on map - book details page

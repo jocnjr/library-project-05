@@ -13,7 +13,9 @@ const bookSchema = new Schema({
     } 
   ],
   owner: {type: Schema.Types.ObjectId, ref: 'User'},
-  location: { type: { type: String }, coordinates: [Number] }
+  location: { type: { type: String }, coordinates: [Number] },
+  imgPath: String,
+  imgOriginalName: String
 }, {
   timestamps: true
 });
